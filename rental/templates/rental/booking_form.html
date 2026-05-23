@@ -1,35 +1,56 @@
 {% extends 'rental/base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card p-4 shadow-sm border-0" style="border-radius: 16px; background: #ffffff;">
-            <h3 class="fw-bold text-dark mb-1">Formulir Sewa</h3>
-            <p class="text-muted small">Silakan lengkapi data perjalanan Anda dengan benar.</p>
-            
-            <div class="alert alert-dark d-flex justify-content-between align-items-center my-3" style="border-radius: 10px;">
-                <div>
-                    <span class="small text-white-50 d-block">Unit Pilihan:</span>
-                    <strong class="text-warning">{{ mobil.merek }} {{ mobil.nama_mobil }}</strong>
-                </div>
-                <div class="text-end">
-                    <span class="small text-white-50 d-block">Tarif Pokok:</span>
-                    <strong class="text-success">Rp {{ mobil.harga_per_hari }}/Hari</strong>
-                </div>
-            </div>
-            <hr class="text-muted">
-            
+<div class="row">
+    <div class="col-md-5 mb-4">
+        <div class="card border-0 shadow-sm p-4 text-center bg-dark text-white" style="border-radius: 16px;">
+            <h5 class="text-warning fw-bold mb-3">CONSOLES BILLING</h5>
+            {% if ps.gambar_url %}
+                <img src="{{ ps.gambar_url }}" style="max-height: 180px; object-fit: contain;" class="img-fluid my-2">
+            {% endif %}
+            <h3 class="fw-bold mt-2">{{ ps.tipe_ps }}</h3>
+            <p class="badge bg-light text-dark px-3 py-2">Unit Ke: {{ ps.nomor_ps }}</p>
+            <hr class="border-secondary">
+            <p class="mb-1 text-muted">Tarif Billing:</p>
+            <h4 class="text-success fw-bold">Rp {{ ps.harga_per_jam }} <small class="fs-6 text-white">/ Jam</small></h4>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
+            <h4 class="fw-bold text-dark mb-4">📝 Form Open Billing PS</h4>
             <form method="POST">
-                {% csrf_token %}
-                {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-secondary">{{ field.label }}</label>
-                    {{ field }}
+              {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Nama Lengkap Player</label>
+                        {{ form.nama_penyewa }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">No. HP / WhatsApp</label>
+                        {{ form.no_hp }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Tanggal Main</label>
+                        {{ form.tanggal_sewa }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Jam Mulai</label>
+                        {{ form.jam_mulai }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Lama Main (Jam)</label>
+                        {{ form.lama_main }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Metode Pembayaran</label>
+                        {{ form.metode_pembayaran }}
+                    </div>
                 </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-warning text-dark w-100 py-2.5 mt-3 fw-bold" style="border-radius: 8px;">
-                    Konfirmasi & Terbitkan Nota
-                </button>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-warning text-dark fw-bold w-100 py-2.5 shadow-sm">🚀 Konfirmasi & Cetak Nota</button>
+                    <a href="{% url 'katalog' %}" class="btn btn-light w-100 mt-2 text-muted btn-sm">Batal</a>
+                </div>
             </form>
         </div>
     </div>

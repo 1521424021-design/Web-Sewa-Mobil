@@ -1,0 +1,135 @@
+{% extends 'rental/base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-dark">📈 PANEL KENDALI & KEUANGAN RENTAL</h2>
+        <p class="text-muted">Pantau grafik omset harian/bulanan serta riwayat kerja shift kasir.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="p-3 bg-dark text-white rounded shadow-sm d-inline-block">
+            <small class="text-warning d-block font-monospace">TOTAL OMSET BERJALAN:</small>
+            <h4 class="fw-bold mb-0">Rp {{ total_omset }}</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm p-4 bg-white mb-4" style="border-radius: 16px;">
+            <h5 class="fw-bold text-dark mb-3">🏪 Status Loket Kasir</h5>
+            <hr>
+            {% if shift_aktif %}
+                <div class="alert alert-success py-2 small mb-3">
+                    🟢 Anda sedang dalam <strong>Shift Aktif</strong><br>
+                    <small>Mulai Buka: {{ shift_aktif.waktu_buka|date:"H:i | d M Y" }}</small>
+                </div>
+                <table class="table table-sm small table-borderless text-muted mb-3">
+                    <tr><td>Operator:</td><td class="fw-bold text-dark">{{ shift_aktif.operator.username }}</td></tr>
+                    <tr><td>Modal Laci Awal:</td><td class="fw-bold text-dark">Rp {{ shift_aktif.modal_awal }}</td></tr>
+                </table>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger">Uang Fisik Akhir di Laci</label>
+                        {{ form_tutup.uang_fisik_akhir }}
+                    </div>
+                    <button type="submit" name="aksi_tutup" class="btn btn-danger w-100 fw-bold btn-sm py-2">🔴 Tutup Shift Kerja</button>
+                </form>
+            {% else %}
+                <div class="alert alert-danger py-2 small mb-3">
+                    🔴 Laci Kasir Terkunci. Silakan buka shift untuk mulai mencatat billing transaksi.
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-success">Input Modal Awal Laci</label>
+                        {{ form_buka.modal_awal }}
+                    </div>
+                    <button type="submit" name="aksi_buka" class="btn btn-success w-100 fw-bold btn-sm py-2">🟢 Buka Shift Kasir Baru</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
+            <h6 class="fw-bold text-dark mb-3">⏱️ Log Shift Kerja Terakhir</h6>
+            <div class="list-group list-group-flush">
+                {% for s in riwayat_shift %}
+                    <div class="list-group-item px-0 py-2 small">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold text-dark">{{ s.operator.username }}</span>
+                            <span class="badge {% if s.status == 'Buka' %}bg-success{% else %}bg-secondary{% endif %}">{{ s.status }}</span>
+                        </div>
+                        <small class="text-muted d-block">Buka: {{ s.waktu_buka|date:"d/m H:i" }} {% if s.waktu_tutup %} | Tutup: {{ s.waktu_tutup|date:"d/m H:i" }}{% endif %}</small>
+                        {% if s.status == 'Tutup' %}
+                            <small class="text-dark d-block">💰 Fisik: <strong>Rp {{ s.uang_fisik_akhir }}</strong> (Sistem: Rp {{ s.total_pendapatan_sistem }})</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4 bg-white mb-4" style="border-radius: 16px;">
+            <h5 class="fw-bold text-dark mb-3">📅 Tren Grafik Pendapatan Harian (7 Hari Terakhir)</h5>
+            <div style="height: 250px; position: relative;">
+                <canvas id="chartHarian"></canvas>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
+            <h5 class="fw-bold text-dark mb-3">📊 Grafik Pertumbuhan Pendapatan Bulanan</h5>
+            <div style="height: 250px; position: relative;">
+                <canvas id="chartBulanan"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Ambil data JSON dari backend Django
+        const labelHari = {{ label_hari|safe }};
+        const dataHari = {{ data_hari|safe }};
+        const labelBulan = {{ label_bulan|safe }};
+        const dataBulan = {{ data_bulan|safe }};
+
+        // 1. GENERATE GRAFIK HARIAN (LINE CHART INTERAKTIF)
+        const ctxHari = document.getElementById('chartHarian').getContext('2d');
+        new Chart(ctxHari, {
+            type: 'line',
+            data: {
+                labels: labelHari.length ? labelHari : ['Belum Ada Data'],
+                datasets: [{
+                    label: 'Omset Harian (Rp)',
+                    data: dataHari.length ? dataHari : [0],
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 2. GENERATE GRAFIK BULANAN (BAR CHART MODERN)
+        const ctxBulan = document.getElementById('chartBulanan').getContext('2d');
+        new Chart(ctxBulan, {
+            type: 'bar',
+            data: {
+                labels: labelBulan.length ? labelBulan : ['Belum Ada Data'],
+                datasets: [{
+                    label: 'Omset Bulanan (Rp)',
+                    data: dataBulan.length ? dataBulan : [0],
+                    backgroundColor: '#198754',
+                    borderRadius: 6
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    });
+</script>
+{% endblock %}

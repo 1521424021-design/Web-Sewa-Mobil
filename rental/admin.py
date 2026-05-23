@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Mobil, BukuTamu
+from .models import PSUnit, PesananPS, BukuTamuPS
 
-admin.site.register(Mobil)
-admin.site.register(BukuTamu)
+admin.site.register(PSUnit)
+admin.site.register(PesananPS)
+admin.site.register(BukuTamuPS)

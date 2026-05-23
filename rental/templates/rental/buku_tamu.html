@@ -1,130 +1,96 @@
 {% extends 'rental/base.html' %}
 
-{% block title %}Buku Tamu Digital - Wheels_ID{% endblock %}
-
 {% block content %}
-<style>
-    .card-form {
-        border: none;
-        border-radius: 16px;
-        background: #ffffff;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-    }
-    .form-control:focus {
-        border-color: #ffc107;
-        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.15);
-    }
-    .review-scroll-container {
-        max-height: 550px;
-        overflow-y: auto;
-        padding-right: 8px;
-    }
-    /* Kustomisasi scrollbar agar lebih halus */
-    .review-scroll-container::-webkit-scrollbar {
-        width: 6px;
-    }
-    .review-scroll-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-    .review-scroll-container::-webkit-scrollbar-thumb {
-        background: #cbd5e0;
-        border-radius: 10px;
-    }
-    .card-review {
-        border: none;
-        border-radius: 12px;
-        background: #ffffff;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-        transition: all 0.2s ease;
-    }
-    .card-review:hover {
-        transform: scale(1.01);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-    }
-    .avatar-placeholder {
-        width: 45px;
-        height: 45px;
-        background-color: #edf2f7;
-        color: #4a5568;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-    }
-</style>
-
-<div class="row mb-4">
-    <div class="col-12 text-center text-md-start mb-4">
-        <h2 class="fw-bold text-dark mb-1">Feedback & Ulasan Pengunjung</h2>
-        <p class="text-muted">Pendapat jujur dari mereka yang telah merasakan layanan armada premium kami.</p>
-    </div>
-</div>
-
 <div class="row">
-    <div class="col-lg-5 mb-5 mb-lg-0">
-        <div class="card card-form p-4 border">
-            <h4 class="fw-bold mb-2">Tulis Testimoni</h4>
-            <p class="text-muted small mb-4">Bagikan pengalaman berkendara Anda bersama Wheels_ID untuk membantu meningkatkan kualitas layanan kami.</p>
-            
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm p-4 bg-white sticky-top" style="border-radius: 16px; top: 20px;">
+            <h4 class="fw-bold text-dark mb-3">🎮 Mading Komunitas</h4>
+            <p class="text-muted small">Mau cari lawan mabar, request game baru, atau beri saran? Tulis di bawah!</p>
+            <hr class="mt-0">
             <form method="POST">
                 {% csrf_token %}
-                
-                {% for field in form %}
                 <div class="mb-3">
-                    <label class="form-label small fw-bold text-secondary">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
-                    {% endif %}
+                    <label class="form-label small fw-bold">Nama Gamers</label>
+                    {{ form.nama }}
                 </div>
-                {% endfor %}
-                
-                <button type="submit" class="btn btn-dark w-100 py-2.5 mt-2 fw-bold text-uppercase tracking-wide" style="border-radius: 8px;">
-                    Kirim Catatan Ulasan
-                </button>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Kategori Postingan</label>
+                    {{ form.kategori }}
+                </div>
+                <div class="mb-3" id="box_input_game" style="display: none;">
+                    <label class="form-label small fw-bold text-success">Judul Game yang Diusulkan</label>
+                    {{ form.nama_game_request }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Isi Pesan / Informasi</label>
+                    {{ form.pesan }}
+                </div>
+                <button type="submit" class="btn btn-warning text-dark fw-bold w-100 py-2">🚀 Kirim Postingan</button>
             </form>
         </div>
     </div>
 
-    <div class="col-lg-7">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold text-dark mb-0">Semua Ulasan Masuk</h5>
-            <span class="badge bg-secondary rounded-pill px-3 py-2 text-xs font-weight-600">{{ semua_ulasan|length }} Pesan</span>
-        </div>
+    <div class="col-md-8">
+        <h4 class="fw-bold text-dark mb-4">💬 Papan Informasi & Aktivitas Player</h4>
         
-        <div class="review-scroll-container">
-            {% for ulasan in semua_ulasan %}
-            <div class="card card-review mb-3 p-3 border-start border-warning border-4">
-                <div class="d-flex align-items-start">
-                    <div class="avatar-placeholder me-3 flex-shrink-0">
-                        {{ ulasan.nama|slice:":1"|upper }}
+        {% for ulasan in semua_ulasan %}
+            <div class="card p-4 border-0 shadow-sm mb-3 {% if ulasan.is_disematkan %}border-start border-warning border-4 bg-warning bg-opacity-10{% else %}bg-white{% endif %}" style="border-radius: 16px;">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h5 class="fw-bold text-dark d-inline mb-0">{{ ulasan.nama }}</h5>
+                        <small class="text-muted d-block" style="font-size: 11px;">{{ ulasan.tanggal_kirim|date:"d M Y - H:i" }} WITA</small>
                     </div>
-                    <div class="flex-grow-1">
-                        <div class="d-md-flex justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0 fw-bold text-dark">{{ ulasan.nama }}</h6>
-                            <span class="text-muted d-block small" style="font-size: 0.75rem;">
-                                📅 {{ ulasan.tanggal_kirim|date:"d M Y, H:i" }}
-                            </span>
-                        </div>
-                        <span class="text-muted d-block small mb-2" style="font-size: 0.8rem;">
-                            {{ ulasan.email }}
-                        </span>
-                        <p class="card-text text-secondary mb-0" style="font-size: 0.92rem; line-height: 1.6; font-style: italic;">
-                            "{{ ulasan.pesan }}"
-                        </p>
+                    
+                    <div>
+                        {% if ulasan.is_disematkan %}
+                            <span class="badge bg-dark text-warning px-2 py-1.5 rounded small">📌 INFO TURNAMEN / PENGUMUMAN</span>
+                        {% elif ulasan.kategori == 'Cari Lawan Mabar' %}
+                            <span class="badge bg-danger text-white px-2 py-1.5 rounded small">🔥 MENANTANG MABAR</span>
+                        {% elif ulasan.kategori == 'Request Game Baru' %}
+                            <span class="badge bg-success text-white px-2 py-1.5 rounded small">🎮 REQUEST GAME</span>
+                        {% else %}
+                            <span class="badge bg-secondary text-white px-2 py-1.5 rounded small">📝 SUGGESTION</span>
+                        {% endif %}
                     </div>
                 </div>
+
+                <div class="my-2 text-dark">
+                    {% if ulasan.kategori == 'Request Game Baru' and ulasan.nama_game_request %}
+                        <p class="mb-1 fw-bold text-success">Mengusulkan Game: <span class="badge bg-light border text-dark fs-6">"{{ ulasan.nama_game_request }}"</span></p>
+                    {% endif %}
+                    <p class="mb-0" style="line-height: 1.6;">{{ ulasan.pesan }}</p>
+                </div>
+
+                {% if ulasan.kategori == 'Request Game Baru' %}
+                    <div class="border-top pt-3 mt-3 d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Apakah kamu ingin game ini didownload juga?</small>
+                        <a href="{% url 'vote_game' ulasan.id %}" class="btn btn-outline-success btn-sm px-3 fw-bold rounded-pill">
+                            👍 Setuju ({{ ulasan.jumlah_voting }} Suara)
+                        </a>
+                    </div>
+                {% endif %}
             </div>
-            {% empty %}
-            <div class="text-center py-5 border rounded-3 bg-white shadow-sm card-form">
-                <div class="text-muted mb-3 fs-2">✉️</div>
-                <h5 class="fw-bold text-dark mb-1">Belum Ada Catatan</h5>
-                <p class="text-muted small mb-0">Jadilah pelanggan pertama yang meninggalkan jejak ulasan manis di sini!</p>
-            </div>
-            {% endfor %}
-        </div>
+        {% empty %}
+            <div class="alert alert-light border text-center py-4">Belum ada aktivitas obrolan di mading rental PS ini.</div>
+        {% endfor %}
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const kategoriSelect = document.getElementById("id_kategori_bukutamu");
+        const boxInputGame = document.getElementById("box_input_game");
+
+        function aturKeterampilanInput() {
+            if (kategoriSelect.value === "Request Game Baru") {
+                boxInputGame.style.display = "block";
+            } else {
+                boxInputGame.style.display = "none";
+            }
+        }
+
+        kategoriSelect.addEventListener("change", aturKeterampilanInput);
+        aturKeterampilanInput(); // Jalankan sekali saat load pertama
+    });
+</script>
 {% endblock %}
