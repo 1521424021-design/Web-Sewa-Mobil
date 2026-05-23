@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import PSUnit, PesananPS, BukuTamuPS
+from .models import PSUnit, PesananPS, BukuTamuPS, ShiftOperator
 
 admin.site.register(PSUnit)
 admin.site.register(PesananPS)
